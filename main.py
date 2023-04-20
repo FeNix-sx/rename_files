@@ -66,10 +66,7 @@ def rename_files(folder: str, code: str) -> None:
 
             file_path = os.path.join(folder, file)
             os.rename(file_path, os.path.join(folder, new_name))
-        #     result_dict[new_name] = file
-        #
-        # for key, val in sorted(result_dict.items()):
-        #     print(f"{val.rjust(19)} : new name - {key}")
+
         print("Выполнено")
 
     except Exception as ex:
