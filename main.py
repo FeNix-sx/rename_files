@@ -1,6 +1,8 @@
 import os
 import re
 import csv
+import time
+
 
 def read_molels_names()->dict:
     """
@@ -42,35 +44,48 @@ def read_name_folder(name_code: dict) -> bool:
             if name_code.get(name,False):
                 print(f"{name}: код - {name_code[name]}")
             else:
-                raise ValueError (f"Ошибка! На найден код для '{name}'")
+                raise Exception(f"\nОшибка! На найден код для модели '{name}'")
 
         for folder in folders:
             print(f"Выполняю замену имен файлов в папке {folder} -> ", end=" ")
-            rename_files(folder, name_code[folder])
+            if not rename_files(folder, name_code[folder]):
+                return
+
+        print("Программа успешно завершена")
 
     except Exception as ex:
         print(ex)
 
 
-def rename_files(folder: str, code: str) -> None:
+def rename_files(folder: str, code: str) -> bool:
     try:
         # Получаем список файлов из папки folder с расширением jpg
         files = [f for f in os.listdir(folder) if f.endswith('.jpg')]
-        result_dict = dict()
-        regex = r"(\d)(.*?)(\d*?)(.?)(\.jpg)"
+        regex = r"\d+"
         for file in files:
-            res = re.findall(regex, file)
-            func = lambda x: "1" if x == "" else x
-            part = "" if res[0][0] == "1" else "_" +  res[0][0]
-            new_name = code + "-d012#" +  func(res[0][2]).rjust(3,"0") + part + ".jpg"
+            if "-d012#" in file:
+                raise Exception(f"\n### Ошибка! Файл с нужным именем уже существует в папке {folder}: {file}")
+            else:
+                res = re.findall(regex, file)
 
-            file_path = os.path.join(folder, file)
-            os.rename(file_path, os.path.join(folder, new_name))
+                part = "" if len(res) == 1 or res[1] == "1" else f"_{res[1]}"
+
+                new_name = f"{code}-d012#{str(res[0]).rjust(3,'0')}{part}.jpg"
+                file_path = os.path.join(folder, file)
+
+                try:
+                    os.rename(file_path, os.path.join(folder, new_name))
+                except Exception as ex:
+                    print(ex)
+                    return False
 
         print("Выполнено")
+        return True
 
     except Exception as ex:
         print(ex)
+        return False
+
 
 def main():
     names_dict = read_molels_names()
@@ -79,3 +94,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    time.sleep(4)
